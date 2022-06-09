@@ -1,32 +1,140 @@
 // Copyright 2021 NNTU-CS
-#ifndef INCLUDE_TSTACK_H_
-#define INCLUDE_TSTACK_H_
+#include <string>
+#include <map>
+#include "tstack.h"
 
-template<typename T, int size>
-class TStack {
- private:
-    T arr[100];
-    int top;
- public:
-    TStack() :top(-1) { }
-    T get() const {
-        return arr[top];
+int Prior(char c) {
+    int ret = -1;
+    if (c == '(' )
+        ret = 0;
+    else if (c == ')' )
+        ret = 1;
+@@ -28,7 +28,7 @@ std::string infx2pstfx(std::string inf) {
+              switch (Prior(inf[i])) {
+                  case -1:
+                      out += inf[i];
+                      if (Prior(inf[i+1]) != -1)
+                          out += " ";
+                      if (i+1 == inf.length()) {
+                          while (!stack1.isEmpty()) {
+                              out += " ";
+                              out += stack1.get();
+                              stack1.pop();
+                          }
+                      }
+                      break;
+                  case 0:
+                      stack1.push(inf[i]);
+                      break;
+                  case 1: {
+                      while (!stack1.isEmpty()) {
+                          if (Prior(stack1.get()) > 0) {
+                              out += stack1.get();
+                              out += " ";
+                              stack1.pop();
+                          } else {
+                                stack1.pop();
+                                break;
+                            }
+                      }
+                      if (i+1 == inf.length()) {
+                          while (!stack1.isEmpty()) {
+                              out += stack1.get();
+                              out += " ";
+                              stack1.pop();
+                          }
+                      }
+                      break;
+                  }
+                  case 2:
+                      if (Prior(stack1.get()) < Prior(inf[i])) {
+                          stack1.push(inf[i]);
+                      } else {
+                            while (!stack1.isEmpty()) {
+                                if (Prior(stack1.get()) == 0) {
+                                    break;
+                                } else {
+                                      int t1 = Prior(stack1.get());
+                                      int t2 = Prior(inf[i]);
+                                      if (t1 >= t2) {
+                                          out += stack1.get();
+                                          out += " ";
+                                          stack1.pop();
+                                      }
+                                  }
+                            }
+                            stack1.push(inf[i]);
+                        }
+                      break;
+                  case 3:
+                     if (Prior(stack1.get()) < Prior(inf[i])) {
+                          stack1.push(inf[i]);
+                      } else {
+                            while (!stack1.isEmpty()) {
+                                if (Prior(stack1.get()) == 0) {
+                                    break;
+                                } else {
+                                      int t1 = Prior(stack1.get());
+                                      int t2 = Prior(inf[i]);
+                                      if (t1 >= t2) {
+                                          out += stack1.get();
+                                          out += " ";
+                                          stack1.pop();
+                                      }
+                                  }
+                            }
+                            stack1.push(inf[i]);
+                        }
+                      break;
+              }
+          }
     }
-    bool isEmpty() const {
-        return top == -1;
+    if (out[out.length()-1] == ' ') {
+        std::string temp = out;
+        out.assign(temp, 0, temp.length()-1);
     }
-    bool isFull() const {
-        return top == size - 1;
+    return out;
+}
+int eval(std::string pref) {
+    TStack<int, 100> stack1;
+    int count = 0;
+    for (int i = 0; i < pref.length(); ++i) {
+        if (pref[i] != ' ') {
+            if (Prior(pref[i]) == -1) {
+                std::string temp = "";
+                temp += pref[i];
+                stack1.push(std::stoi(temp));
+                temp = "";
+            } else {
+                  int temp1 = stack1.get();
+                  stack1.pop();
+                  int temp2 = stack1.get();
+                  stack1.pop();
+                  switch (pref[i]) {
+                      case '+':
+                          count = temp2 + temp1;
+                          stack1.push(count);
+                          break;
+                      case '-':
+                          count = temp2 - temp1;
+                          stack1.push(count);
+                          break;
+                      case '*':
+                          count = temp2 * temp1;
+                          stack1.push(count);
+                          break;
+                      case '/':
+                          count = temp2 / temp1;
+                          stack1.push(count);
+                          break;
+                  }
+              }
+            if (i+1 == pref.length()) {
+                count = stack1.get();
+                stack1.pop();
+                return count;
+            }
+        }
     }
-    void pop() {
-        if (top >= 0)
-            top--;
-    }
-    void push(T item) {
-        if (top < size - 1)
-            arr[++top] = item;
-    }
-};
-#endif  // INCLUDE_TSTACK_H_
-TStack<char, 100> stackA;
-TStack<int, 100> stackB;
+    return count;
+}
