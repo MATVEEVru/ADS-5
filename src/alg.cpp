@@ -1,37 +1,32 @@
 // Copyright 2021 NNTU-CS
-#include <string>
-#include <map>
-#include "tstack.h"
+#ifndef INCLUDE_TSTACK_H_
+#define INCLUDE_TSTACK_H_
 
-template<typename t, int size>
-class tStack {
-private:
-     t arr[size];
-     int top;
+template<typename T, int size>
+class TStack {
+ private:
+    T arr[100];
+    int top;
  public:
-     tStack() : top(-1) {}
-     bool empty() const {
-         return top == -1;
-     }
-     bool full() const {
-         return top == size - 1;
-     }
-     t get() {
-         if (isEmpty()) {
-
-int eval(std::string pref) {
-  // добавьте код
-  return 0;
-         } else {
-             return arr[top];
-         }
-     }
-     void top() {
-         if (top >= 0)
-             top--;
-     }
-     void push(t value) {
-         if (top < size - 1)
-             arr[++top] = value;
-     }
-}
+    TStack() :top(-1) { }
+    T get() const {
+        return arr[top];
+    }
+    bool isEmpty() const {
+        return top == -1;
+    }
+    bool isFull() const {
+        return top == size - 1;
+    }
+    void pop() {
+        if (top >= 0)
+            top--;
+    }
+    void push(T item) {
+        if (top < size - 1)
+            arr[++top] = item;
+    }
+};
+#endif  // INCLUDE_TSTACK_H_
+TStack<char, 100> stackA;
+TStack<int, 100> stackB;
