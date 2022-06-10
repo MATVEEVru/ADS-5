@@ -2,139 +2,105 @@
 #include <string>
 #include <map>
 #include "tstack.h"
-
-int Prior(char c) {
-    int ret = -1;
-    if (c == '(' )
-        ret = 0;
-    else if (c == ')' )
-        ret = 1;
-@@ -28,7 +28,7 @@ std::string infx2pstfx(std::string inf) {
-              switch (Prior(inf[i])) {
-                  case -1:
-                      out += inf[i];
-                      if (Prior(inf[i+1]) != -1)
-                          out += " ";
-                      if (i+1 == inf.length()) {
-                          while (!stack1.isEmpty()) {
-                              out += " ";
-                              out += stack1.get();
-                              stack1.pop();
-                          }
-                      }
-                      break;
-                  case 0:
-                      stack1.push(inf[i]);
-                      break;
-                  case 1: {
-                      while (!stack1.isEmpty()) {
-                          if (Prior(stack1.get()) > 0) {
-                              out += stack1.get();
-                              out += " ";
-                              stack1.pop();
-                          } else {
-                                stack1.pop();
-                                break;
-                            }
-                      }
-                      if (i+1 == inf.length()) {
-                          while (!stack1.isEmpty()) {
-                              out += stack1.get();
-                              out += " ";
-                              stack1.pop();
-                          }
-                      }
-                      break;
-                  }
-                  case 2:
-                      if (Prior(stack1.get()) < Prior(inf[i])) {
-                          stack1.push(inf[i]);
-                      } else {
-                            while (!stack1.isEmpty()) {
-                                if (Prior(stack1.get()) == 0) {
-                                    break;
-                                } else {
-                                      int t1 = Prior(stack1.get());
-                                      int t2 = Prior(inf[i]);
-                                      if (t1 >= t2) {
-                                          out += stack1.get();
-                                          out += " ";
-                                          stack1.pop();
-                                      }
-                                  }
-                            }
-                            stack1.push(inf[i]);
-                        }
-                      break;
-                  case 3:
-                     if (Prior(stack1.get()) < Prior(inf[i])) {
-                          stack1.push(inf[i]);
-                      } else {
-                            while (!stack1.isEmpty()) {
-                                if (Prior(stack1.get()) == 0) {
-                                    break;
-                                } else {
-                                      int t1 = Prior(stack1.get());
-                                      int t2 = Prior(inf[i]);
-                                      if (t1 >= t2) {
-                                          out += stack1.get();
-                                          out += " ";
-                                          stack1.pop();
-                                      }
-                                  }
-                            }
-                            stack1.push(inf[i]);
-                        }
-                      break;
-              }
-          }
+int prior(char ch) {
+    if (ch == '(') {
+        return 0;
     }
-    if (out[out.length()-1] == ' ') {
-        std::string temp = out;
-        out.assign(temp, 0, temp.length()-1);
+    if (ch == ')') {
+        return 1;
     }
-    return out;
+    if (ch == '+') {
+        return 2;
+    }
+    if (ch == '-') {
+        return 2;
+    }
+    if (ch == '*') {
+        return 3;
+    }
+    if (ch == '/') {
+        return 3;
+    }
+    if (ch == ' ') {
+        return 4;
+    } else {
+    return -1;
+    }
 }
-int eval(std::string pref) {
-    TStack<int, 100> stack1;
-    int count = 0;
-    for (int i = 0; i < pref.length(); ++i) {
-        if (pref[i] != ' ') {
-            if (Prior(pref[i]) == -1) {
-                std::string temp = "";
-                temp += pref[i];
-                stack1.push(std::stoi(temp));
-                temp = "";
-            } else {
-                  int temp1 = stack1.get();
-                  stack1.pop();
-                  int temp2 = stack1.get();
-                  stack1.pop();
-                  switch (pref[i]) {
-                      case '+':
-                          count = temp2 + temp1;
-                          stack1.push(count);
-                          break;
-                      case '-':
-                          count = temp2 - temp1;
-                          stack1.push(count);
-                          break;
-                      case '*':
-                          count = temp2 * temp1;
-                          stack1.push(count);
-                          break;
-                      case '/':
-                          count = temp2 / temp1;
-                          stack1.push(count);
-                          break;
-                  }
-              }
-            if (i+1 == pref.length()) {
-                count = stack1.get();
+
+std::string infx2pstfx(std::string inf) {
+    std::string post;
+    TStack <char, 100> stack1;
+for (int i = 0; i < inf.size(); i++) {
+    if (prior(inf[i]) == -1) {
+        post.push_back(inf[i]);
+        post.push_back(' ');
+    } else {
+      if (prior(inf[i]) == 0) {
+        stack1.push(inf[i]);
+      } else if (stack1.isEmpty()) {
+        stack1.push(inf[i]);
+      } else if ((prior(inf[i]) > prior(stack1.get()))) {
+        stack1.push(inf[i]);
+      } else if (prior(inf[i]) == 1) {
+        while (prior(stack1.get()) != 0) {
+          post.push_back(stack1.get());
+          post.push_back(' ');
+          stack1.pop();
+        }
+            stack1.pop();
+        } else {
+            while (!stack1.isEmpty() && prior(inf[i]) <= prior(stack1.get())) {
+                post.push_back(stack1.get());
+                post.push_back(' ');
                 stack1.pop();
-                return count;
             }
+            stack1.push(inf[i]);
         }
     }
-    return count;
+}
+while (!stack1.isEmpty()) {
+    post.push_back(stack1.get());
+    post.push_back(' ');
+    stack1.pop();
+}
+for (int i = 0; i < post.size(); i++) {
+    if (post[post.size() - 1] == ' ')
+      post.erase(post.size() - 1);
+  }
+  return post;
+}
+
+int calcul(char ch, int b, int a) {
+    if ('+' == ch) {
+        return a + b;
+    }
+    if ('-' == ch) {
+        return a - b;
+    }
+    if ('*' == ch) {
+        return a * b;
+    }
+    if ('/' == ch && b != 0) {
+        return a / b;
+    } else {
+    return 0;
+    }
+}
+int eval(std::string pref) {
+  // добавьте код
+TStack <int, 100> stack2;
+  for (int i = 0; i < pref.size(); i++) {
+    if (prior(pref[i]) == -1) {
+      stack2.push(pref[i] - '0');
+    } else if (prior(pref[i]) <= 3) {
+      int b = stack2.get();
+      stack2.pop();
+      int a = stack2.get();
+      stack2.pop();
+      stack2.push(calcul(pref[i], b, a));
+    }
+  }
+  int znachenie = stack2.get();
+  return znachenie;
 }
