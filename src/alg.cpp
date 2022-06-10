@@ -1,106 +1,113 @@
 // Copyright 2021 NNTU-CS
 #include <string>
 #include <map>
+#include <stack>
 #include "tstack.h"
-int prior(char ch) {
-    if (ch == '(') {
-        return 0;
+int prior(char z) {
+  switch (z) {
+    case '(':
+      return 0;
+    case ')':
+      return 1;
+    case '+':
+      return 2;
+    case '-':
+      return 2;
+    case '*':
+      return 3;
+    case '/':
+      return 3;
+  }
+  return 0;
+}
+bool search(std::string s, char z) {
+  for (int i = 0; i < s.length(); ++i) {
+    if (s[i] == z) {
+      return true;
     }
-    if (ch == ')') {
-        return 1;
-    }
-    if (ch == '+') {
-        return 2;
-    }
-    if (ch == '-') {
-        return 2;
-    }
-    if (ch == '*') {
-        return 3;
-    }
-    if (ch == '/') {
-        return 3;
-    }
-    if (ch == ' ') {
-        return 4;
-    } else {
-    return -1;
-    }
+  }
+  return false;
 }
 
 std::string infx2pstfx(std::string inf) {
-    std::string post;
-    TStack <char, 100> stack1;
-for (int i = 0; i < inf.size(); i++) {
-    if (prior(inf[i]) == -1) {
-        post.push_back(inf[i]);
-        post.push_back(' ');
-    } else {
+  TStack<char, 100> stack;
+  std::stack<char> Stack;
+  std::string number = "0123456789";
+  std::string operation = "()+-*/";
+  std::string rt = "";
+  for (int i = 0; i < inf.length(); ++i) {
+    if (search(number, inf[i])) {
+      rt += inf[i];
+      rt += ' ';
+    } else if (search(operation, inf[i])) {
       if (prior(inf[i]) == 0) {
-        stack1.push(inf[i]);
-      } else if (stack1.isEmpty()) {
-        stack1.push(inf[i]);
-      } else if ((prior(inf[i]) > prior(stack1.get()))) {
-        stack1.push(inf[i]);
-      } else if (prior(inf[i]) == 1) {
-        while (prior(stack1.get()) != 0) {
-          post.push_back(stack1.get());
-          post.push_back(' ');
-          stack1.pop();
+        Stack.push(inf[i]);
+      } else if (Stack.empty()) {
+        Stack.push(inf[i]);
+      } else if (prior(inf[i]) > prior(Stack.top())) {
+        Stack.push(inf[i]);
+      } else if (inf[i] == ')') {
+        while (Stack.top() != '(') {
+          rt += Stack.top();
+          rt += ' ';
+          Stack.pop();
         }
-            stack1.pop();
-        } else {
-            while (!stack1.isEmpty() && prior(inf[i]) <= prior(stack1.get())) {
-                post.push_back(stack1.get());
-                post.push_back(' ');
-                stack1.pop();
-            }
-            stack1.push(inf[i]);
+        if (Stack.top() == '(') {
+          Stack.pop();
         }
+      } else {
+        for (int j = 0; j<= Stack.size(); ++j) {
+          if (prior(Stack.top()) >= prior(inf[i])) {
+            rt += Stack.top();
+            rt += ' ';
+            Stack.pop();
+          }
+        }
+        Stack.push(inf[i]);
+      }
     }
-}
-while (!stack1.isEmpty()) {
-    post.push_back(stack1.get());
-    post.push_back(' ');
-    stack1.pop();
-}
-for (int i = 0; i < post.size(); i++) {
-    if (post[post.size() - 1] == ' ')
-      post.erase(post.size() - 1);
   }
-  return post;
-}
-
-int calcul(char ch, int b, int a) {
-    if ('+' == ch) {
-        return a + b;
+  if (!Stack.empty()) {
+    for (int j = 0; j <= Stack.size(); ++j) {
+      rt += Stack.top();
+      rt += ' ';
+      Stack.pop();
     }
-    if ('-' == ch) {
-        return a - b;
-    }
-    if ('*' == ch) {
-        return a * b;
-    }
-    if ('/' == ch && b != 0) {
-        return a / b;
-    } else {
-    return 0;
-    }
+  }
+  if (rt[rt.length() - 1] == ' ') {
+    rt.erase(rt.length() - 1);
+  }
+  return rt;
 }
 int eval(std::string pref) {
-  // добавьте код
-TStack <int, 100> stack2;
-  for (int i = 0; i < pref.size(); i++) {
-    if (prior(pref[i]) == -1) {
-      stack2.push(pref[i] - '0');
-    } else if (prior(pref[i]) <= 3) {
-      int b = stack2.get();
-      stack2.pop();
-      int a = stack2.get();
-      stack2.pop();
-      stack2.push(calcul(pref[i], b, a));
+  int mm = 0;
+  std::stack<int> Stack;
+  TStack<int, 100> stack;
+  std::string number = "0123456789";
+  std::string operation = "()+-*/";
+  for (int i = 0; i < pref.length(); ++i) {
+    if (search(number, pref[i])) {
+      Stack.push(pref[i] - '0');
+    } else if (search(operation, pref[i])) {
+      int a = 0, b = 0;
+      a = Stack.top();
+      Stack.pop();
+      b = Stack.top();
+      Stack.pop();
+      if (pref[i] == '+') {
+        Stack.push(b + a);
+      }
+      if (pref[i] == '-') {
+        Stack.push(b - a);
+      }
+      if (pref[i] == '*') {
+        Stack.push(b * a);
+      }
+      if (pref[i] == '/') {
+        Stack.push(b / a);
+      }
     }
   }
-  int znachenie = stack2.get();
-  return znachenie;
+  mm = Stack.top();
+  return mm;
 }
